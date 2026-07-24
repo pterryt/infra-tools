@@ -88,3 +88,11 @@ render_template() {
   for v in "$@"; do varlist+="\${$v} "; done
   envsubst "${varlist% }" < "$template" > "$output"
 }
+
+# ---- install packages ------------------------------------------------------
+install_packages() {
+    log_info "Updating package index..."
+    apt-get update -qq
+    log_info "Installing: $*"
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "$@"
+}
