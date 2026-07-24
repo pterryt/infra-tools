@@ -1,0 +1,9 @@
+[Unit]
+Description=DDNS update
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/ddns.env
+ExecStart=/usr/local/bin/ddns.sh
