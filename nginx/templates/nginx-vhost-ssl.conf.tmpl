@@ -1,0 +1,46 @@
+# Managed by nginx-deploy — service: ${SERVICE_NAME}
+# Regenerate with: ./vhost.sh add services.d/${SERVICE_NAME}.env
+#
+# Requires an existing wildcard cert at:
+#   /etc/letsencrypt/live/${BASE_DOMAIN}/{fullchain,privkey}.pem
+# obtained via request-wildcard-cert.sh. vhost.sh only renders this
+# template when that cert is present on disk (see create_service()).
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${DOMAIN};
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name ${DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${BASE_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${BASE_DOMAIN}/privkey.pem;
+    include /etc/nginx/ssl-params.conf;
+    include /etc/nginx/snippets/security-headers.conf;
+
+    client_max_body_size ${CLIENT_MAX_BODY_SIZE};
+
+    access_log /var/log/nginx/${SERVICE_NAME}.access.log;
+    error_log  /var/log/nginx/${SERVICE_NAME}.error.log;
+
+    location / {
+        proxy_pass http://${UPSTREAM_HOST}:${UPSTREAM_PORT};
+
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_connect_timeout 10s;
+        proxy_read_timeout 60s;
+    }
+}

@@ -1,0 +1,17 @@
+[Unit]
+Description=
+
+[Container]
+Image=
+ContainerName=
+Network=
+Volume=
+EnvironmentFile=
+PublishPort=1000:1000
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
+

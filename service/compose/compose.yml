@@ -1,0 +1,53 @@
+services:
+  service-database:
+    container_name: service-database
+    image: 
+    networks:
+      - service-network
+    ports:
+      - ${DOCKER_DB_EXTERNAL_PORT:-3306}:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    volumes:
+      - ${VOL_DB:-service-database}:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=$$SQL_ROOT_PASSWORD --execute \"SHOW DATABASES;\""
+      interval: 5s
+      timeout: 10s
+      retries: 40
+
+  service-name:
+    container_name: service
+    image: localhost/image:${DOCKER_IMAGE_TAG:-main}
+    build:
+      context: .
+      target: service.bin
+      dockerfile: apps/docker/Dockerfile
+      args:
+        USER_ID: ${DOCKER_USER_ID:-1000}
+        GROUP_ID: ${DOCKER_GROUP_ID:-1000}
+        DOCKER_USER: ${DOCKER_USER:}
+    networks:
+      - service-network
+    restart: unless-stopped
+    env_file:
+        ${DOCKER_SERVICE_ENV_FILE}
+    environment:
+      DATA_DIR: ""
+      LOGS_DIR: ""
+    ports:
+      - ${DOCKER_SERVICE_EXTERNAL_PORT:-1000}:1000
+    volumes:
+      - ${DOCKER_VOL_ETC:-./env/dist/etc}:/service/env/dist/etc
+    depends_on:
+      service-database:
+        condition: service_healthy
+      other-service:
+        condition: service_completed_successfully
+
+volumes:
+  service-database:
+
+networks:
+  service-network:

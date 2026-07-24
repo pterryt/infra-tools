@@ -1,0 +1,42 @@
+# Secrets / environment files
+*.env
+.env
+.env.*
+!*.env.dist
+
+# Local overrides
+*.local
+*.override
+
+# Generated certificates / keys
+*.pem
+*.key
+*.crt
+
+# Terraform/Ansible-style local state (if you add them later)
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Test output
+coverage/
+test-results/
+
+# Shell tooling caches
+.shellcheck-cache/
